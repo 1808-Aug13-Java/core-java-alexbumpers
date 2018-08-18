@@ -544,31 +544,70 @@ public class EvaluationService {
 	 */
 	static class RotationalCipher {
 		private int key;
-
+		private int alphabetSize = 26;
+		
+		// uppercase letters begin @ 'A' in the ASCII store casted to the int ASCII value
+		private int capOffset = (int) 'A';
+		
+		// uppercase letters begin @ 'A' in the ASCII store
+		private int lowerOffset = (int) 'a';
+		// 
 		public RotationalCipher(int key) {
 			super();
 			this.key = key;
 		}
 
 		public String rotate(String string) {
-			char[] strArray = string.toCharArray();
-			for (int i = 0; i < strArray.length; i++) {
+			// store chars as ints
+			// 
+			int charAsInt = '0';
+			// 
+			int offset = 0;
+			// previous iteration proved to difficult with "normal" immutable Java Strings
+			StringBuilder mutableStr = new StringBuilder();
+			
+
+			
+			// loop through all chars in our input
+			for (int i = 0; i < string.length(); i++) {
+				charAsInt = (int) string.charAt(i);
 				
-				//shift back/forth
-				char letter = strArray[i];
-				// use chars so that we can rotate properly
-				letter = (char) (letter + key);
-				if (letter > 'z') {
-					letter = (char) (letter - 26);
-				} else if (letter < 'a') {
-					// "wrap" the cipher 
-					letter = (char) (letter + 26);
+				// don't encode non-alphachars but still store them in the mutableStr object
+				// don't use .replaceAll(); etc here!
+				if (!Character.isAlphabetic(charAsInt)) {
+					mutableStr.append((char) charAsInt);
+					continue;
 				}
 				
-				strArray[i] = letter;
+				if (Character.isUpperCase(charAsInt)) {
+					offset = capOffset;
+				} else {
+					offset = lowerOffset;
+				}
+				
+				// 'a' and 'A' == 0; 'z' and 'Z' == 25
+				charAsInt -= offset;
+				
+				// add rotational key to chInt
+				charAsInt += this.key;
+				
+				charAsInt %= alphabetSize;
+				
+				if (charAsInt < 0) {
+					charAsInt += alphabetSize;
+				}
+				
+				// IMPORT remove offset defined earlier
+				charAsInt += offset;
+				
+				// still an int, so cast back to char (may cause errors? but passes test cases...)
+				mutableStr.append((char) charAsInt);
+				
 			}
+			String recastStr = mutableStr.toString();
+			return recastStr;
 			
-			return new String(strArray);
+			
 		}
 
 	}
@@ -642,6 +681,48 @@ public class EvaluationService {
 	 *
 	 */
 	static class AtbashCipher {
+		
+		//
+		private static int alphabetSize = 26;
+		//
+		private static int lowerOffset = ((int) 'z') + 1;
+		
+		private static String translateString(String input, boolean encodeIfTrue) {
+			StringBuilder mutableStr = new StringBuilder();
+			// allocate storage space for # of counted chars
+			int counter = 0;
+			// store chars as in Caesar cipher
+			char chStore = '0';
+			
+			for (int i = 0; i < input.length(); i++) {
+				chStore = Character.toLowerCase(input.charAt(i));
+				
+				// ignore non alphanumeric as in caesar
+				if (!Character.isDigit(chStore) && !Character.isAlphabetic(chStore)) {
+					continue;
+				}
+				
+				// translate if isAlphabetic
+				if (Character.isAlphabetic(chStore)) {
+					// 'flip' chars back to 'correct' position (e.g., 'a' is now 1)
+					chStore += alphabetSize;
+					
+					// re flip based on offset
+					chStore -= 1 + 2 * ((int) chStore - lowerOffset);
+				}
+				
+				
+				counter++;
+				if (encodeIfTrue && counter % 6 == 0) {
+					mutableStr .append(" ");
+					counter = 1;
+				}
+				
+				mutableStr.append(chStore);
+			}
+			
+			return mutableStr.toString();
+		}
 
 		/**
 		 * Question 13
@@ -653,71 +734,7 @@ public class EvaluationService {
 		
 		
 		public static String encode(String string) {
-//			HashMap<Character, Character> charMap = new HashMap<Character, Character>();
-//			charMap.put('A', 'Z');
-//			charMap.put('B', 'Y');
-//			charMap.put('C', 'X');
-//			charMap.put('D', 'W');
-//			charMap.put('E', 'V');
-//			charMap.put('F', 'U');
-//			charMap.put('G', 'T');
-//			charMap.put('H', 'S');
-//			charMap.put('I', 'R');
-//			charMap.put('J', 'Q');
-//			charMap.put('K', 'P');
-//			charMap.put('L', 'O');
-//			charMap.put('M', 'N');
-//			charMap.put('N', 'M');
-//			charMap.put('O', 'L');
-//			charMap.put('P', 'K');
-//			charMap.put('Q', 'J');
-//			charMap.put('R', 'I');
-//			charMap.put('S', 'H');
-//			charMap.put('T', 'G');
-//			charMap.put('U', 'F');
-//			charMap.put('V', 'E');
-//			charMap.put('W', 'D');
-//			charMap.put('X', 'C');
-//			charMap.put('Y', 'B');
-//			charMap.put('Z', 'A');
-//			
-//			string.replaceAll("[^A-Za-z0-9]", "");
-//			String cipher = "";
-//			char[] strToChar = string.toCharArray();
-//			
-//			for (char s : strToChar) {
-//				
-//			}
-//			
-			String abc = "abcdefghijklmnopqrstuvwxyz";
-			string = string.replaceAll("[^A-Za-z0-9]", "");
-			String cipher = "";
-
-			
-			for (int i = 0; i < string.length(); i++) {
-				char preCipherChar = string.charAt(i);
-				for (int j = 0; j < abc.length(); j++) {
-					char postCipherChar = abc.charAt(j);
-					if ( postCipherChar == preCipherChar) {
-						int charIndex = abc.indexOf(postCipherChar);
-						int pos = ((abc.length()-1) - charIndex);
-						cipher += abc.charAt(pos);
-
-
-					}
-				}
-			}
-////			cipher = string.replaceAll(".....", "$0");
-//			cipher.split("(?<=\\G.{" + 5 + "})");
-//			for (int s = 0; s < cipher.length() - 1; s++) {
-//				System.out.print(cipher.charAt(s));
-//			}
-//			System.out.println(cipher);
-			String val = "5";
-			String result = cipher.replaceAll("(.{" + val + "})", "$0 ").trim();
-//			System.out.println(result);
-			System.out.println(result);
-			return cipher;
+			return translateString(string, true);
 		}
 
 		/**
@@ -728,7 +745,7 @@ public class EvaluationService {
 		 */
 		public static String decode(String string) {
 			// TODO Write an implementation for this method declaration
-			return null;
+			return translateString(string, false);
 		}
 	}
 
