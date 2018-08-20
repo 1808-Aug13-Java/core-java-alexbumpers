@@ -297,12 +297,15 @@ public class EvaluationService {
 		String cleanString = string.replaceAll("\n", "").replaceAll("\n", "");
 		
 		// create a map so that the words (keys) and counts (values) are easily accessible
+		// and split at whitespace
 		Map<String, Integer> wordMap = new HashMap<>();
 		for (String word : cleanString.split("\\W")) {
 			
+			// for each key (word) in the hashmap, add 1 to the value every time the word appears in string
 			if (wordMap.containsKey(word)) {
 				wordMap.put(word, wordMap.get(word)+1);
 			} else {
+				// otherwise count is just 1
 				wordMap.put(word, 1);
 			}
 		}
@@ -359,6 +362,7 @@ public class EvaluationService {
 			int branchL = 0;
 			
 			while (sortedList.size() > 0) {
+				// halve the # of items to check each iteration
 				int halved = (branchL + branchR)/2;
 				int vs = t.compareTo(sortedList.get(halved));
 				
@@ -407,15 +411,6 @@ public class EvaluationService {
 	 */
 	// test for separate words fails
 	public String toPigLatin(String string) {
-		
-//		String[] splitString = string.split(" ");
-//		for (String s : splitString) {
-//			s += s.charAt(0);
-//			s = s.substring(1);
-//			s += "ay";
-//			System.out.print(s);
-//
-//		}
 
 		if ((string.charAt(0) == 'a') || (string.charAt(0) == 'e') || (string.charAt(0) == 'i') || (string.charAt(0) == 'o') || (string.charAt(0) == 'u') ) {
 			string = string + "ay";
